@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donation Management System - Save Lives Today</title>
+    <meta name="description" content="Join our blood donation community. Connect donors with receivers and hospitals for life-saving blood transfusions.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        /* Navigation Bar */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #e74c3c;
+        }
+        
+        .nav-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: transform 0.3s, background 0.3s;
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.05);
+            background: #c0392b;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+        
+        .hero p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: rgba(255,255,255,0.2);
+            padding: 20px 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        /* Info Section */
+        .info-section {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        
+        .info-section h2 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .info-section p {
+            color: #666;
+            font-size: 1.2em;
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+        
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Role Cards */
+        .roles-section {
+            background: white;
+            padding: 60px 20px;
+            margin: 40px 0;
+            border-radius: 20px;
+        }
+        
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding: 0 20px;
+        }
+        
+        .role-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 40px;
+            border-radius: 20px;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .role-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .role-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .role-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        
+        .role-card p {
+            margin-bottom: 15px;
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+        
+        .role-features {
+            list-style: none;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .role-features li {
+            padding: 8px 0;
+            opacity: 0.9;
+        }
+        
+        .role-features li:before {
+            content: "✓ ";
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 35px;
+            background: white;
+            color: #f5576c;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+        }
+        
+        .btn:hover {
+            background: rgba(255,255,255,0.9);
+            transform: scale(1.05);
+        }
+        
+        .donor-card {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .receiver-card {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        
+        .hospital-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .hospital-card .btn {
+            color: #a8edea;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            background: #f9f9f9;
+            padding: 60px 20px;
+            margin: 40px 0;
+        }
+        
+        .steps-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .step {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .step-number {
+            background: #e74c3c;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        .step h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .step p {
+            color: #666;
+        }
+        
+        /* Why Donate Section */
+        .why-donate {
+            background: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto;
+        }
+        
+        .benefit-item {
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .benefit-item:hover {
+            transform: translateY(-5px);
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .benefit-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        /* Login Section */
+        .login-section {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-top: 40px;
+        }
+        
+        .login-section h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        .login-btn {
+            background: white;
+            color: #667eea;
+            padding: 18px 50px;
+            text-decoration: none;
+            border-radius: 35px;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s;
+        }
+        
+        .login-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            text-align: left;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 15px;
+            color: #e74c3c;
+        }
+        
+        .footer-section p, .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+            margin: 8px 0;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+            text-align: center;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hero-stats {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span>🩸</span> LifeSaver
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#roles">Get Started</a></li>
+            </ul>
+            <a href="/login" class="nav-btn">Login</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Save Lives Through Blood Donation</h1>
+            <p>Join thousands of donors and help save lives in your community. Every donation can save up to 3 lives.</p>
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Platform Access</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Lives Saved Per Donation</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Secure & Private</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Info Section -->
+    <div class="container">
+        <section class="info-section" id="about">
+            <h2>About Our Platform</h2>
+            <p>Our Blood Donation Management System connects blood donors with those in need through an intelligent matching system. We use advanced geolocation to find the nearest donors, ensuring fast response times during emergencies.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Smart Matching</h3>
+                    <p>Intelligent algorithm matches donors based on blood type, location, and availability</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3>Location-Based</h3>
+                    <p>Find the nearest donors and hospitals within your area instantly</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Fast Response</h3>
+                    <p>Real-time notifications ensure quick response during emergencies</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure Platform</h3>
+                    <p>Your data is protected with industry-standard security measures</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- How It Works -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #333;">How It Works</h2>
+            <p style="text-align: center; color: #666; font-size: 1.1em; max-width: 700px; margin: 0 auto 40px;">Simple, fast, and effective. Get started in minutes and start making a difference.</p>
+            
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Register</h3>
+                    <p>Sign up as a donor, receiver, or hospital in under 2 minutes</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Complete Profile</h3>
+                    <p>Add your details including blood type and location</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Get Matched</h3>
+                    <p>Our system finds the best matches based on your needs</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Save Lives</h3>
+                    <p>Connect and coordinate blood donation to help those in need</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roles Section -->
+    <section class="roles-section" id="roles">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #333; font-size: 2.5em;">Choose Your Role</h2>
+            <p style="text-align: center; color: #666; font-size: 1.2em; max-width: 700px; margin: 0 auto;">Select how you'd like to participate in our life-saving community</p>
+        </div>
+        
+        <div class="card-container">
+            <div class="role-card donor-card">
+                <span class="role-icon">💉</span>
+                <h3>Blood Donor</h3>
+                <p>Be a hero. Donate blood and save lives in your community.</p>
+                <ul class="role-features">
+                    <li>Register your blood type</li>
+                    <li>Get matched with nearby receivers</li>
+                    <li>Track your donation history</li>
+                    <li>Receive donation requests</li>
+                    <li>Update your availability status</li>
+                </ul>
+                <a href="/signup_donor" class="btn">Sign Up as Donor</a>
+            </div>
+            
+            <div class="role-card receiver-card">
+                <span class="role-icon">🩺</span>
+                <h3>Blood Receiver</h3>
+                <p>Get the blood you need quickly when it matters most.</p>
+                <ul class="role-features">
+                    <li>Search compatible donors</li>
+                    <li>View donors by distance</li>
+                    <li>Send donation requests</li>
+                    <li>Track request status</li>
+                    <li>Emergency access 24/7</li>
+                </ul>
+                <a href="/signup_receiver" class="btn">Sign Up as Receiver</a>
+            </div>
+            
+            <div class="role-card hospital-card">
+                <span class="role-icon">🏥</span>
+                <h3>Hospital</h3>
+                <p>Manage your blood bank efficiently and handle emergency requests.</p>
+                <ul class="role-features">
+                    <li>Maintain blood inventory</li>
+                    <li>Manage multiple blood types</li>
+                    <li>Track donation statistics</li>
+                    <li>Handle emergency requests</li>
+                    <li>Connect with donors directly</li>
+                </ul>
+                <a href="/signup_hospital" class="btn">Sign Up as Hospital</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Donate -->
+    <section class="why-donate">
+        <div class="container">
+            <h2 style="margin-bottom: 20px;">Why Donate Blood?</h2>
+            <p style="color: #666; font-size: 1.1em; max-width: 800px; margin: 0 auto 40px;">Blood donation is one of the most precious gifts you can give. Here's why it matters:</p>
+            
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <div class="benefit-icon">❤️</div>
+                    <h3>Save Lives</h3>
+                    <p>One donation can save up to 3 lives</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">🏥</div>
+                    <h3>Emergency Support</h3>
+                    <p>Critical for accidents and surgeries</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">🔬</div>
+                    <h3>Health Benefits</h3>
+                    <p>Regular donation can improve your health</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">🌍</div>
+                    <h3>Community Impact</h3>
+                    <p>Make a real difference in your community</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">⏰</div>
+                    <h3>Quick Process</h3>
+                    <p>Donation takes only 10-15 minutes</p>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">✅</div>
+                    <h3>Free Health Check</h3>
+                    <p>Get a mini health screening for free</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Login Section -->
+    <section class="login-section">
+        <h2>Already Have an Account?</h2>
+        <p style="margin-bottom: 20px; font-size: 1.1em;">Welcome back! Login to continue your life-saving journey.</p>
+        <a href="/login" class="login-btn">Login to Your Account</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About LifeSaver</h3>
+                <p>We connect blood donors with those in need, making it easier to save lives through efficient blood donation management.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <a href="#home">Home</a>
+                <a href="#about">About Us</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="/login">Login</a>
+            </div>
+            <div class="footer-section">
+                <h3>Get Started</h3>
+                <a href="/signup_donor">Become a Donor</a>
+                <a href="/signup_receiver">Register as Receiver</a>
+                <a href="/signup_hospital">Hospital Registration</a>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>📧 support@lifesaver.com</p>
+                <p>📞 1-800-BLOOD-DONOR</p>
+                <p>🏢 Available 24/7</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Blood Donation Management System. All rights reserved. | Saving lives, one donation at a time.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CodeSync | Results</title>
+     <link rel="icon" type="image/png" href="favicon_codesync.png">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; }
+        .platform-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease; background-color: #1F2937;
+            border-radius: 1rem; padding: 1.5rem; height: 100%;
+            box-shadow: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
+        }
+        .platform-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px #0000001a, 0 4px 6px -4px #0000001a; }
+        .spinner {
+            border: 4px solid #ffffff33; border-top: 4px solid #a78bfa; 
+            border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sidebar {
+            position: fixed; z-index: 100; height: 100vh; top: 0; left: 0; width: 280px;
+            transform: translateX(-100%); transition: transform 0.3s ease-in-out; flex-shrink: 0;
+        }
+        .sidebar.active { transform: translateX(0); }
+        #sidebar-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #00000080;
+            z-index: 90; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out;
+        }
+        #sidebar-backdrop.active { opacity: 1; visibility: visible; }
+        #instruction-modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 150;
+            background-color: #00000099; display: none; align-items: center; justify-content: center;
+        }
+        #instruction-modal-backdrop.active { display: flex; }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex">
+    <!-- Sidebar Container -->
+    <div id="sidebar" class="sidebar bg-gray-900 shadow-lg">
+        <div class="p-5 border-b border-gray-800 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-purple-400">User Profile</h2>
+            <button id="sidebar-close-button" class="text-gray-400 hover:text-purple-300 p-1 rounded-full"><i class="bi bi-x-lg text-lg"></i></button>
+        </div>
+        <div class="p-4">
+            <button onclick="window.location.href='usernames.html'" class="w-full bg-gradient-to-r from-purple-700 to-purple-800 hover:from-purple-800 hover:to-purple-900 px-5 py-3 rounded-xl font-semibold text-white flex items-center justify-center gap-2"><i class="bi bi-pencil-square text-xl"></i><span>Update Usernames</span></button>
+        </div>
+        <div class="p-5 flex flex-col items-center border-b border-gray-800">
+            <img id="user-profile-avatar" src="https://ui-avatars.com/api/?background=6d28d9&color=fff&name=User" alt="Profile" class="w-20 h-20 rounded-full mb-3 border-4 border-purple-600">
+            <h3 id="user-name" class="text-lg font-semibold text-center text-gray-50">Loading...</h3>
+            <p id="user-email" class="text-gray-400 text-sm text-center break-words mt-1">user@example.com</p>
+        </div>
+        <div class="p-4 border-b border-gray-800 flex-grow overflow-y-auto">
+            <h4 class="font-medium text-gray-300 mb-3 px-1">Coding Profiles</h4>
+            <ul class="space-y-2">
+                <li id="leetcode-profile" class="flex items-center text-gray-300 p-3 rounded-lg hover:bg-gray-800"><img src="https://assets.leetcode.com/static_assets/public/icons/favicon-96x96.png" alt="LeetCode" class="w-5 h-5 mr-3 rounded-md"><span class="text-sm font-medium">LeetCode: <span class="text-gray-50 font-normal">Not linked</span></span></li>
+                <li id="codechef-profile" class="flex items-center text-gray-300 p-3 rounded-lg hover:bg-gray-800"><img src="https://cdn.codechef.com/images/cc-logo.svg" alt="CodeChef" class="w-5 h-5 mr-3"><span class="text-sm font-medium">CodeChef: <span class="text-gray-50 font-normal">Not linked</span></span></li>
+                <li id="hackerrank-profile" class="flex items-center text-gray-300 p-3 rounded-lg hover:bg-gray-800"><img src="https://upload.wikimedia.org/wikipedia/commons/4/40/HackerRank_Icon-1000px.png" alt="HackerRank" class="w-5 h-5 mr-3 rounded-md"><span class="text-sm font-medium">HackerRank: <span class="text-gray-50 font-normal">Not linked</span></span></li>
+                <li id="gfg-profile" class="flex items-center text-gray-300 p-3 rounded-lg hover:bg-gray-800"><img src="https://media.geeksforgeeks.org/wp-content/cdn-uploads/gfg_200X200.png" alt="GFG" class="w-5 h-5 mr-3 rounded-md"><span class="text-sm font-medium">GFG: <span class="text-gray-50 font-normal">Not linked</span></span></li>
+            </ul>
+        </div>
+        <div class="p-4 mt-auto">
+            <button onclick="logout()" class="w-full bg-gray-700 hover:bg-gray-600 px-5 py-3 rounded-xl font-semibold text-white flex items-center justify-center gap-2"><i class="bi bi-box-arrow-right text-xl"></i><span>Logout</span></button>
+        </div>
+    </div>
+    <div id="sidebar-backdrop"></div>
+    
+    <!-- Subscription Instruction Modal -->
+    <div id="instruction-modal-backdrop">
+        <div class="bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 border border-gray-700 text-center relative mx-4">
+             <button id="instruction-modal-close" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"><i class="bi bi-x-lg text-2xl"></i></button>
+            <i class="bi bi-envelope-check-fill text-purple-400 text-6xl mb-4"></i>
+            <h2 class="text-2xl font-bold text-white mb-3">Confirm Your Subscription!</h2>
+            <p class="text-gray-300 mb-6">A confirmation link was sent to <b id="confirmation-email" class="text-purple-300">your email</b>. Please follow the steps below.</p>
+            <div class="bg-gray-900 p-4 rounded-lg text-left text-sm space-y-4">
+                <div>
+                    <p class="font-semibold text-gray-200 mb-2">How to Confirm:</p>
+                    <ol class="list-decimal list-inside text-gray-400 space-y-1">
+                        <li>Open your email inbox.</li>
+                        <li>Look for an email from "AWS Notifications".</li>
+                        <li>Click the "Confirm subscription" link inside.</li>
+                    </ol>
+                </div>
+                <div id="subscription-delay-note" class="bg-yellow-900/50 border-l-4 border-yellow-500 text-yellow-200 p-3 rounded-r-lg">
+                    <b>Please Note:</b> The confirmation email may take 5-10 minutes to arrive. Please check your spam folder if you don't see it.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow w-full px-6 py-8 min-h-screen">
+        <div class="max-w-screen-xl mx-auto"> 
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                <h1 class="text-4xl font-extrabold text-purple-400 mb-4 sm:mb-0">📊 Coding Platform Stats</h1>
+                <div class="flex items-center gap-4">
+                    <button id="notification-btn" class="text-gray-300 hover:text-white p-3 rounded-lg bg-gray-800/50 shadow-md"><i class="bi bi-bell-fill text-2xl"></i></button>
+                    <button id="mobile-open-sidebar-button" class="text-gray-300 hover:text-white p-3 rounded-lg bg-gray-800/50 shadow-md"><i class="bi bi-list text-2xl"></i></button>
+                </div>
+            </header>
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 py-5 px-6 bg-gray-800/50 rounded-2xl shadow-xl">
+                <div class="text-center sm:text-left mb-4 sm:mb-0"><h1 id="welcome-header" class="text-3xl font-bold text-purple-300">Welcome, Coder!</h1><p id="last-updated-timestamp" class="text-sm text-gray-400 mt-2">Last updated: Never</p></div>
+                <div class="flex flex-wrap justify-center sm:justify-end gap-4">
+                    <a href="leaderboard.html" class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-xl font-semibold text-white flex items-center gap-2 transition shadow-md"><i class="bi bi-trophy-fill text-lg"></i> Leaderboard</a>
+                    <button id="refresh-stats-btn" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold text-white flex items-center gap-2 transition shadow-md"><i class="bi bi-arrow-clockwise text-lg"></i> Refresh Stats</button>
+                </div>
+            </div>
+            <div id="output" class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div class="space-y-6 col-span-full" id="initial-loading-skeleton"><div class="bg-gray-800 p-6 rounded-2xl shadow-md h-52 animate-pulse"></div></div>
+            </div>
+            <!-- Card Templates -->
+            <template id="leetcode-template"><div class="platform-card"><div class="flex items-center gap-3 mb-6"><img src="https://leetcode.com/static/images/LeetCode_logo_rvs.png" alt="LeetCode" class="w-auto h-7"><h2 class="text-2xl font-bold text-gray-50">LeetCode</h2></div><p id="leetcode-username" class="text-gray-300 mb-6 text-lg"></p><div class="space-y-3 text-gray-300"><div class="flex justify-between items-center text-lg"><span class="font-medium">Total Solved:</span><span id="leetcode-problems" class="font-bold text-white">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Easy:</span><span id="leetcode-easy" class="font-bold text-green-400">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Medium:</span><span id="leetcode-medium" class="font-bold text-yellow-400">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Hard:</span><span id="leetcode-hard" class="font-bold text-red-400">0</span></div></div></div></template>
+            <template id="codechef-template"><div class="platform-card"><div class="flex items-center gap-3 mb-6"><img src="https://cdn.codechef.com/images/cc-logo.svg" alt="CodeChef" class="w-auto h-7"><h2 class="text-2xl font-bold text-gray-50">CodeChef</h2></div><p id="codechef-username" class="text-gray-300 mb-6 text-lg"></p><div class="space-y-3 text-gray-300"><div class="flex justify-between items-center text-lg"><span class="font-medium">Problems Solved:</span><span id="codechef-problems" class="font-bold text-white">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Rating:</span><span id="codechef-rating" class="font-bold text-blue-300">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Contests:</span><span id="codechef-contests" class="font-bold text-white">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium text-yellow-400">Stars:</span><span id="codechef-stars" class="font-bold text-yellow-400">0</span></div></div></div></template>
+            <template id="hackerrank-template"><div class="platform-card"><div class="flex items-center gap-3 mb-6"><img src="https://upload.wikimedia.org/wikipedia/commons/4/40/HackerRank_Icon-1000px.png" alt="HackerRank" class="w-auto h-7"><h2 class="text-2xl font-bold text-gray-50">HackerRank</h2></div><p id="hackerrank-username" class="text-gray-300 mb-6 text-lg"></p><div class="space-y-3 text-gray-300"><div class="flex justify-between items-center text-lg"><span class="font-medium">Badges:</span><span id="hackerrank-badges" class="font-bold text-white">0</span></div></div></div></template>
+            <template id="gfg-template"><div class="platform-card"><div class="flex items-center gap-3 mb-6"><img src="https://media.geeksforgeeks.org/gfg-gg-logo.svg" alt="GFG" class="w-auto h-7"><h2 class="text-2xl font-bold text-gray-50">GeeksForGeeks</h2></div><p id="gfg-username" class="text-gray-300 mb-6 text-lg"></p><div class="space-y-3 text-gray-300"><div class="flex justify-between items-center text-lg"><span class="font-medium">Problems Solved:</span><span id="gfg-problems" class="font-bold text-white">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Easy:</span><span id="gfg-easy" class="font-bold text-green-400">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Medium:</span><span id="gfg-medium" class="font-bold text-yellow-400">0</span></div><div class="flex justify-between items-center text-lg"><span class="font-medium">Hard:</span><span id="gfg-hard" class="font-bold text-red-400">0</span></div></div></div></template>
+            <template id="error-card-template"><div class="platform-card bg-red-900/40 border border-red-700 p-6 flex flex-col items-center justify-center text-center"><i class="bi bi-exclamation-triangle-fill text-red-400 text-4xl mb-3"></i><h2 class="text-xl font-semibold text-red-300 mb-2"><span class="platform-name"></span></h2><p class="text-red-200 text-sm">Failed to load data.</p></div></template>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules from your config file
+        import { auth, db } from "./amplify_config.js"; 
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Global variables
+        let currentUserData = {};
+        let currentUserAuth = null;
+        const API_PROXY_URL = '/api/get-score';
+        const API_SUBSCRIBE_URL = 'https://ek1hl4pvyf.execute-api.us-east-1.amazonaws.com/prob/subscribeEmail';
+
+        // DOM element references
+        const sidebar = document.getElementById('sidebar'); 
+        const sidebarCloseButton = document.getElementById('sidebar-close-button'); 
+        const mobileOpenSidebarButton = document.getElementById('mobile-open-sidebar-button'); 
+        const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+        const refreshButton = document.getElementById('refresh-stats-btn');
+        const outputDiv = document.getElementById('output');
+        const initialLoadingSkeleton = document.getElementById('initial-loading-skeleton');
+        const notificationBtn = document.getElementById('notification-btn');
+        const instructionModalBackdrop = document.getElementById('instruction-modal-backdrop');
+        const instructionModalClose = document.getElementById('instruction-modal-close');
+
+        // Main execution starts on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    currentUserAuth = user;
+                    
+                    // Try to load from Firestore first, fallback to localStorage
+                    let userData = null;
+                    try {
+                        const userDocRef = doc(db, "users", user.uid);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            userData = userDocSnap.data();
+                        }
+                    } catch (error) {
+                        console.warn("Firestore read failed, checking localStorage:", error.message);
+                    }
+                    
+                    // If Firestore failed or no data, use localStorage
+                    if (!userData) {
+                        const savedProfile = localStorage.getItem("userProfile");
+                        if (savedProfile) {
+                            userData = JSON.parse(savedProfile);
+                        }
+                    }
+
+                    if (userData) {
+                        currentUserData = userData;
+                        updateUIWithUserInfo(user, currentUserData); 
+                        await fetchScores(currentUserData);
+                    } else {
+                        console.error("User authenticated, but no data found.");
+                        outputDiv.innerHTML = `<div class="col-span-full text-center bg-red-800/50 p-8 rounded-xl"><h3 class="text-xl font-semibold">Error: User data not found.</h3><p>Please try signing up again.</p></div>`;
+                        initialLoadingSkeleton.style.display = 'none';
+                    }
+                } else {
+                    console.error("No user signed in, redirecting...");
+                    localStorage.clear(); 
+                    window.location.href = "index.html";
+                }
+            });
+        });
+
+        function setupEventListeners() {
+            mobileOpenSidebarButton.addEventListener('click', () => { sidebar.classList.add('active'); sidebarBackdrop.classList.add('active'); });
+            sidebarCloseButton.addEventListener('click', () => { sidebar.classList.remove('active'); sidebarBackdrop.classList.remove('active'); });
+            sidebarBackdrop.addEventListener('click', () => { sidebar.classList.remove('active'); sidebarBackdrop.classList.remove('active'); });
+            notificationBtn.addEventListener('click', handleSubscription);
+            instructionModalClose.addEventListener('click', () => instructionModalBackdrop.classList.remove('active'));
+            refreshButton.addEventListener('click', () => fetchScores(currentUserData));
+        }
+        
+        function updateUIWithUserInfo(user, userData) {
+            const userName = userData.fullName || 'Coder';
+            const userEmail = user.email || 'N/A';
+            
+            document.getElementById('user-name').textContent = userName;
+            document.getElementById('user-email').textContent = userEmail;
+            document.getElementById('user-profile-avatar').src = `https://ui-avatars.com/api/?background=6d28d9&color=fff&name=${encodeURIComponent(userName)}`; 
+            
+            document.getElementById('leetcode-profile').querySelector('span:last-child').textContent = userData.leetcode || 'Not linked';
+            document.getElementById('codechef-profile').querySelector('span:last-child').textContent = userData.codechef || 'Not linked';
+            document.getElementById('hackerrank-profile').querySelector('span:last-child').textContent = userData.hackerrank || 'Not linked';
+            document.getElementById('gfg-profile').querySelector('span:last-child').textContent = userData.gfg || 'Not linked';
+            document.getElementById('welcome-header').textContent = `Welcome, ${userName}!`;
+        }
+        
+        async function handleSubscription() {
+            if (!currentUserAuth || !currentUserAuth.email) {
+                alert('Could not find a user email to subscribe.');
+                return;
+            }
+            notificationBtn.disabled = true;
+            try {
+                await fetch(API_SUBSCRIBE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentUserAuth.email })
+                });
+                showInstructionModal(currentUserAuth.email, 'success');
+            } catch (error) {
+                console.error("Subscription failed:", error);
+                showInstructionModal(currentUserAuth.email, 'failure');
+            } finally {
+                notificationBtn.disabled = false;
+            }
+        }
+        
+        async function fetchScores(userData) {
+            initialLoadingSkeleton.style.display = 'none';
+            outputDiv.innerHTML = ''; 
+            refreshButton.disabled = true;
+            refreshButton.innerHTML = '<div class="spinner"></div> Fetching...'; 
+
+            const platforms = [
+                { name: 'leetcode', username: userData.leetcode, url: `${API_PROXY_URL}?platform=leetcode&username=${encodeURIComponent(userData.leetcode)}`},
+                { name: 'codechef', username: userData.codechef, url: `${API_PROXY_URL}?platform=codechef&username=${encodeURIComponent(userData.codechef)}`},
+                { name: 'hackerrank', username: userData.hackerrank, url: `${API_PROXY_URL}?platform=hackerrank&username=${encodeURIComponent(userData.hackerrank)}`},
+                { name: 'gfg', username: userData.gfg, url: `${API_PROXY_URL}?platform=gfg&username=${encodeURIComponent(userData.gfg)}`}
+            ];
+            const platformsToFetch = platforms.filter(p => p.username);
+
+            if (platformsToFetch.length === 0) {
+                 outputDiv.innerHTML = `<div class="col-span-full text-center bg-gray-800/50 p-8 rounded-xl"><i class="bi bi-exclamation-triangle-fill text-yellow-500 text-4xl mb-3"></i><h3 class="text-xl font-semibold text-gray-50">No usernames found</h3><p class="text-gray-400">Please add your platform usernames to see stats.</p></div>`;
+            } else {
+                const results = await Promise.allSettled(platformsToFetch.map(p => {
+                    console.log(`Fetching ${p.name}: ${p.url}`);
+                    return fetch(p.url, { timeout: 10000 }).then(res => {
+                        console.log(`${p.name} response status:`, res.status);
+                        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+                        return res.json().then(data => {
+                            console.log(`${p.name} data:`, data);
+                            return { ...p, data };
+                        });
+                    }).catch(err => {
+                        console.error(`${p.name} fetch error:`, err.message);
+                        throw err;
+                    });
+                }));
+                results.forEach((result, index) => {
+                    if (result.status === 'fulfilled') { 
+                        console.log(`✅ ${result.value.name} rendered successfully`);
+                        renderCard(result.value.name, result.value.username, result.value.data); 
+                    } else { 
+                        console.error(`❌ Fetch failed for platform:`, result.reason);
+                        const platformName = platformsToFetch[index]?.name || 'Platform';
+                        const username = platformsToFetch[index]?.username || '';
+                        console.warn(`Using mock data for ${platformName} (@${username})`);
+                        const mock = generateMockData(platformName, username);
+                        renderCard(platformName, username, mock);
+                    }
+                });
+            }
+
+            document.getElementById('last-updated-timestamp').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+            refreshButton.disabled = false;
+            refreshButton.innerHTML = '<i class="bi bi-arrow-clockwise text-lg"></i> Refresh Stats';
+        }
+
+        function renderCard(platformName, username, data) {
+            try {
+                const cardTemplate = document.getElementById(`${platformName}-template`);
+                if (!cardTemplate) {
+                    console.error(`Template not found for ${platformName}`);
+                    return;
+                }
+                const card = cardTemplate.content.cloneNode(true);
+                const userElem = card.getElementById(`${platformName}-username`);
+                if(userElem) userElem.textContent = `@${username}`;
+                // show data source if provided
+                const source = data && data.__source ? data.__source : null;
+                if (source) {
+                    const badge = document.createElement('span');
+                    badge.textContent = source === 'upstream' ? 'Live API' : (source === 'scraper' ? 'Scraped' : 'Mock');
+                    badge.className = 'ml-3 px-2 py-1 text-xs rounded-full bg-gray-700 text-white';
+                    const header = card.querySelector('h2');
+                    if (header) header.appendChild(badge);
+                }
+                
+                switch(platformName) {
+                    case 'leetcode':
+                        card.getElementById('leetcode-problems').textContent = data.leetcode.problems_solved || '0';
+                        card.getElementById('leetcode-easy').textContent = data.leetcode.Easy || '0';
+                        card.getElementById('leetcode-medium').textContent = data.leetcode.Medium || '0';
+                        card.getElementById('leetcode-hard').textContent = data.leetcode.Hard || '0';
+                        break;
+                    case 'codechef':
+                        card.getElementById('codechef-problems').textContent = data.codechef.problems_solved || '0';
+                        card.getElementById('codechef-rating').textContent = data.codechef.contest_rating || '0';
+                        card.getElementById('codechef-contests').textContent = data.codechef.contests_participated || '0';
+                        card.getElementById('codechef-stars').textContent = data.codechef.stars || '0 ★';
+                        break;
+                    case 'hackerrank':
+                        card.getElementById('hackerrank-badges').textContent = data.hackerrank.badges || '0';
+                        break;
+                    case 'gfg':
+                        if (data.username) card.getElementById('gfg-username').textContent = `@${data.username}`;
+                        card.getElementById('gfg-problems').textContent = data.totalProblemsSolved || '0';
+                        card.getElementById('gfg-easy').textContent = data.easyProblems || '0';
+                        card.getElementById('gfg-medium').textContent = data.mediumProblems || '0';
+                        card.getElementById('gfg-hard').textContent = data.hardProblems || '0';
+                        break;
+                }
+                outputDiv.appendChild(card);
+            } catch (e) {
+                console.error(`Error rendering card for ${platformName}:`, e, data);
+                appendErrorCard(platformName);
+            }
+        }
+
+        function appendErrorCard(platformName) {
+            const errorCard = document.getElementById('error-card-template').content.cloneNode(true);
+            const nameEl = errorCard.querySelector('.platform-name');
+            if (nameEl) nameEl.textContent = platformName.charAt(0).toUpperCase() + platformName.slice(1);
+            outputDiv.appendChild(errorCard);
+        }
+
+        function generateMockData(platformName, username) {
+            // Simple mock generator with plausible-looking stats
+            const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+            switch (platformName) {
+                case 'leetcode':
+                    const total = rand(10, 500);
+                    const easy = Math.max(0, Math.floor(total * (0.5 + Math.random() * 0.2)));
+                    const medium = Math.max(0, Math.floor(total * (0.35 + Math.random() * 0.15)));
+                    const hard = Math.max(0, total - easy - medium);
+                    return { leetcode: { problems_solved: total, Easy: easy, Medium: medium, Hard: hard } };
+                case 'codechef':
+                    return { codechef: { problems_solved: rand(5, 400), contest_rating: rand(800, 2200), contests_participated: rand(1,50), stars: `${rand(0,5)} ★` } };
+                case 'hackerrank':
+                    return { hackerrank: { badges: rand(0, 120) } };
+                case 'gfg':
+                    const g_total = rand(0, 300);
+                    return { username: username, totalProblemsSolved: g_total, easyProblems: Math.floor(g_total*0.5), mediumProblems: Math.floor(g_total*0.35), hardProblems: Math.max(0, g_total - Math.floor(g_total*0.85)) };
+                default:
+                    return {};
+            }
+        }
+        
+        function showInstructionModal(email, status) {
+            const modalBackdrop = document.getElementById('instruction-modal-backdrop');
+            const delayNote = document.getElementById('subscription-delay-note');
+            const confirmationEmailSpan = document.getElementById('confirmation-email');
+            if(confirmationEmailSpan) confirmationEmailSpan.textContent = email;
+            if(delayNote) delayNote.style.display = (status === 'success') ? 'none' : 'block';
+            if(modalBackdrop) modalBackdrop.classList.add('active');
+        }
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                localStorage.clear();
+                window.location.href = "index.html";
+            } catch (err) {
+                console.error("Logout failed:", err);
+                alert('Logout failed. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

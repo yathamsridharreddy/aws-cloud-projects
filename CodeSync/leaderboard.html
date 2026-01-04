@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>CodeSync | Leaderboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; }
+        .leaderboard-row {
+            transition: transform 0.2s ease, box-shadow 0.2s ease; 
+            background-color: #1F2937;
+            border-radius: 0.75rem; padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .leaderboard-row:hover { 
+            transform: translateX(5px); 
+            box-shadow: 0 10px 15px -3px #0000001a;
+        }
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            font-weight: bold;
+            color: white;
+        }
+        .rank-1 { background: linear-gradient(135deg, #fcd34d, #f59e0b); }
+        .rank-2 { background: linear-gradient(135deg, #d1d5db, #9ca3af); }
+        .rank-3 { background: linear-gradient(135deg, #d97706, #ea580c); }
+        .rank-other { background-color: #6b7280; }
+        .spinner {
+            border: 4px solid #ffffff33; border-top: 4px solid #a78bfa; 
+            border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen bg-gray-900">
+    <!-- Main Content Area -->
+    <div class="w-full px-6 py-8 min-h-screen">
+        <div class="max-w-screen-xl mx-auto">
+            <!-- Header -->
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                <div class="flex items-center gap-4 mb-4 sm:mb-0">
+                    <a href="results.html" class="text-gray-400 hover:text-white p-2 rounded-lg transition">
+                        <i class="bi bi-arrow-left text-2xl"></i>
+                    </a>
+                    <h1 class="text-4xl font-extrabold text-purple-400">🏆 Leaderboard</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select id="platform-filter" class="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 hover:border-purple-600 focus:outline-none focus:border-purple-600 transition">
+                        <option value="all">All Platforms</option>
+                        <option value="leetcode">LeetCode</option>
+                        <option value="codechef">CodeChef</option>
+                        <option value="hackerrank">HackerRank</option>
+                        <option value="gfg">GeeksForGeeks</option>
+                    </select>
+                </div>
+            </header>
+
+            <!-- Leaderboard Container -->
+            <div class="bg-gray-800/50 rounded-2xl shadow-xl p-6 border border-gray-700">
+                <!-- Leaderboard Headers -->
+                <div class="grid grid-cols-12 gap-4 mb-4 px-4 py-3 text-gray-400 font-semibold text-sm">
+                    <div class="col-span-1">Rank</div>
+                    <div class="col-span-4">Username</div>
+                    <div class="col-span-3">Platform</div>
+                    <div class="col-span-4">Score</div>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="flex flex-col items-center justify-center py-12">
+                    <div class="spinner mb-4"></div>
+                    <p class="text-gray-400">Loading leaderboard data...</p>
+                </div>
+
+                <!-- Leaderboard List -->
+                <div id="leaderboard-list" class="space-y-2" style="display: none;">
+                    <!-- Entries will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="flex flex-col items-center justify-center py-12" style="display: none;">
+                    <i class="bi bi-inbox text-4xl text-gray-500 mb-3"></i>
+                    <p class="text-gray-400 mb-2">No leaderboard data available yet.</p>
+                    <p class="text-gray-500 text-sm">Try updating your profile with coding platform usernames.</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="flex flex-col items-center justify-center py-12 bg-red-900/20 rounded-lg border border-red-700" style="display: none;">
+                    <i class="bi bi-exclamation-triangle text-4xl text-red-400 mb-3"></i>
+                    <p class="text-red-300">Failed to load leaderboard data.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from "./amplify_config.js"; 
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const API_PROXY_URL = '/api/get-score';
+        const platformFilter = document.getElementById('platform-filter');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const loadingState = document.getElementById('loading-state');
+        const emptyState = document.getElementById('empty-state');
+        const errorState = document.getElementById('error-state');
+
+        let allUsers = [];
+
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            platformFilter.addEventListener('change', renderLeaderboard);
+            
+            onAuthStateChanged(auth, (user) => {
+                if (!user) {
+                    window.location.href = "index.html";
+                } else {
+                    loadLeaderboardData();
+                }
+            });
+        });
+
+        async function loadLeaderboardData() {
+            try {
+                // Try to fetch all users from Firestore
+                let firestoreUsers = [];
+                try {
+                    const usersCollection = collection(db, 'users');
+                    const querySnapshot = await getDocs(usersCollection);
+                    
+                    querySnapshot.forEach((doc) => {
+                        const userData = doc.data();
+                        if (userData) {
+                            firestoreUsers.push({
+                                uid: doc.id,
+                                email: userData.email || 'Unknown',
+                                ...userData
+                            });
+                        }
+                    });
+                    console.log(`Fetched ${firestoreUsers.length} users from Firestore`);
+                } catch (firestoreError) {
+                    console.warn("Firestore fetch failed:", firestoreError.message);
+                }
+
+                // If Firestore has users, use them
+                if (firestoreUsers.length > 0) {
+                    allUsers = firestoreUsers;
+                } else {
+                    // If no Firestore users, create demo data with current user + sample users
+                    const currentUserProfile = localStorage.getItem("userProfile");
+                    let demoUsers = [];
+                    
+                    if (currentUserProfile) {
+                        try {
+                            const userProfile = JSON.parse(currentUserProfile);
+                            demoUsers.push({
+                                uid: userProfile.userId || 'local-user-1',
+                                email: userProfile.email || 'You',
+                                leetcode: userProfile.leetcode,
+                                codechef: userProfile.codechef,
+                                hackerrank: userProfile.hackerrank,
+                                gfg: userProfile.gfg
+                            });
+                        } catch (e) {
+                            console.error("Failed to parse localStorage:", e);
+                        }
+                    }
+                    
+                    // Add sample users to make the leaderboard more interesting
+                    demoUsers.push(
+                        {
+                            uid: 'demo-user-1',
+                            email: 'john.developer@example.com',
+                            leetcode: 'johndeveloper',
+                            codechef: 'johndeveloper',
+                            hackerrank: 'johndeveloper',
+                            gfg: 'johndeveloper'
+                        },
+                        {
+                            uid: 'demo-user-2',
+                            email: 'sarah.coder@example.com',
+                            leetcode: 'sarahcoder',
+                            codechef: 'sarahcoder',
+                            hackerrank: 'sarahcoder',
+                            gfg: ''
+                        },
+                        {
+                            uid: 'demo-user-3',
+                            email: 'mike.programmer@example.com',
+                            leetcode: 'mikeprogrammer',
+                            codechef: 'mikeprogrammer',
+                            hackerrank: '',
+                            gfg: 'mikeprogrammer'
+                        }
+                    );
+                    
+                    allUsers = demoUsers;
+                }
+
+                const fetchPromises = [];
+
+                // Fetch scores for all users
+                for (let user of allUsers) {
+                    const platforms = ['leetcode', 'codechef', 'hackerrank', 'gfg'];
+                    for (let platform of platforms) {
+                        const username = user[platform];
+                        if (username) {
+                            fetchPromises.push(
+                                fetch(`${API_PROXY_URL}?platform=${platform}&username=${encodeURIComponent(username)}`)
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        if (!user.scores) user.scores = {};
+                                        user.scores[platform] = data;
+                                    })
+                                    .catch(e => console.warn(`Failed to fetch ${platform} for ${username}:`, e))
+                            );
+                        }
+                    }
+                }
+
+                await Promise.all(fetchPromises);
+                renderLeaderboard();
+            } catch (error) {
+                console.error("Failed to load leaderboard:", error);
+                loadingState.style.display = 'none';
+                errorState.style.display = 'flex';
+            }
+        }
+
+        function getScore(user, platform) {
+            if (!user.scores || !user.scores[platform]) return 0;
+            
+            const data = user.scores[platform];
+            
+            switch (platform) {
+                case 'leetcode':
+                    return data.leetcode?.problems_solved || 0;
+                case 'codechef':
+                    return data.codechef?.contest_rating || 0;
+                case 'hackerrank':
+                    return data.hackerrank?.badges || 0;
+                case 'gfg':
+                    return data.totalProblemsSolved || 0;
+                default:
+                    return 0;
+            }
+        }
+
+        function renderLeaderboard() {
+            const selectedPlatform = platformFilter.value;
+            
+            // Create ranking array
+            let rankedUsers = allUsers
+                .map(user => {
+                    const score = selectedPlatform === 'all' 
+                        ? (getScore(user, 'leetcode') + getScore(user, 'codechef') + getScore(user, 'hackerrank') + getScore(user, 'gfg'))
+                        : getScore(user, selectedPlatform);
+                    
+                    return { user, score };
+                })
+                .filter(item => item.score > 0)
+                .sort((a, b) => b.score - a.score);
+
+            loadingState.style.display = 'none';
+            
+            if (rankedUsers.length === 0) {
+                leaderboardList.style.display = 'none';
+                emptyState.style.display = 'flex';
+                errorState.style.display = 'none';
+                return;
+            }
+
+            leaderboardList.style.display = 'block';
+            emptyState.style.display = 'none';
+            errorState.style.display = 'none';
+            
+            leaderboardList.innerHTML = rankedUsers.map((item, index) => {
+                const rank = index + 1;
+                const user = item.user;
+                const score = item.score;
+                
+                let rankClass = 'rank-other';
+                if (rank === 1) rankClass = 'rank-1';
+                else if (rank === 2) rankClass = 'rank-2';
+                else if (rank === 3) rankClass = 'rank-3';
+                
+                let medalIcon = '';
+                if (rank === 1) medalIcon = '🥇';
+                else if (rank === 2) medalIcon = '🥈';
+                else if (rank === 3) medalIcon = '🥉';
+                else medalIcon = `#${rank}`;
+                
+                return `
+                    <div class="leaderboard-row grid grid-cols-12 gap-4 items-center">
+                        <div class="col-span-1 flex justify-center">
+                            <div class="rank-badge ${rankClass}">
+                                ${rank <= 3 ? medalIcon : rank}
+                            </div>
+                        </div>
+                        <div class="col-span-4">
+                            <div class="flex items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?background=6d28d9&color=fff&name=${encodeURIComponent(user.email)}" alt="Profile" class="w-10 h-10 rounded-full">
+                                <div>
+                                    <p class="font-semibold text-white">${user.email?.split('@')[0]}</p>
+                                    <p class="text-xs text-gray-400">${user.email}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-span-3">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-900/50 text-purple-300">
+                                ${selectedPlatform === 'all' ? 'Combined' : selectedPlatform.charAt(0).toUpperCase() + selectedPlatform.slice(1)}
+                            </span>
+                        </div>
+                        <div class="col-span-4">
+                            <p class="font-bold text-purple-300 text-lg">${score}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

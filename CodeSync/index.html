@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSync | Login or Signup</title>
+  <script type="module" src="./js/main.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
+    <h1 class="text-2xl font-bold text-center mb-6">Welcome to CodeSync</h1>
+
+    <!-- Toggle Tabs -->
+    <div class="flex justify-center mb-4">
+      <button id="loginTab" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Login</button>
+      <button id="signupTab" class="px-4 py-2 font-semibold text-gray-600 border-b-2 border-transparent ml-4">Signup</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form" class="space-y-4">
+      <input type="text" name="email" placeholder="Username or Email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="password" name="password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Login</button>
+    </form>
+
+    <!-- Signup Form (hidden by default) -->
+    <form id="signup-form" class="space-y-4 hidden">
+      <input type="text" name="email" placeholder="Username or Email" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+      <input type="password" name="password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">Signup</button>
+    </form>
+  </div>
+
+  <script>
+    // Tab switch logic
+    const loginTab = document.getElementById("loginTab");
+    const signupTab = document.getElementById("signupTab");
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+
+    loginTab.addEventListener("click", () => {
+      loginForm.classList.remove("hidden");
+      signupForm.classList.add("hidden");
+      loginTab.classList.add("text-blue-600", "border-blue-600");
+      signupTab.classList.remove("text-blue-600", "border-blue-600");
+      signupTab.classList.add("text-gray-600");
+    });
+
+    signupTab.addEventListener("click", () => {
+      signupForm.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+      signupTab.classList.remove("text-gray-600");
+      signupTab.classList.add("text-blue-600", "border-blue-600");
+      loginTab.classList.remove("text-blue-600", "border-blue-600");
+      loginTab.classList.add("text-gray-600");
+    });
+  </script>
+
+</body>
+</html>

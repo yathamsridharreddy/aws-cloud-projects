@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enter Coding Platform Usernames</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+  <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold mb-6 text-center">Enter Coding Platform Usernames</h2>
+
+    <form id="usernames-form" class="space-y-4">
+      <input type="text" id="leetcode" placeholder="LeetCode Username" required
+        class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+      <input type="text" id="codechef" placeholder="CodeChef Username" required
+        class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+      <input type="text" id="hackerrank" placeholder="HackerRank Username" required
+        class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+      <input type="text" id="gfg" placeholder="GeeksForGeeks Username"
+        class="w-full px-4 py-2 rounded bg-gray-700 text-white" />
+      <button type="submit" class="w-full py-2 bg-green-600 rounded hover:bg-green-700">Save & Continue</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./amplify_config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // Wait for user auth
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html"; // redirect if not logged in
+      } else {
+        const form = document.getElementById("usernames-form");
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const leetcode = document.getElementById("leetcode").value.trim();
+          const codechef = document.getElementById("codechef").value.trim();
+          const hackerrank = document.getElementById("hackerrank").value.trim();
+          const gfg = document.getElementById("gfg").value.trim();
+
+          try {
+            // Try to save to Firestore first
+            await setDoc(doc(db, "users", user.uid), {
+              leetcode,
+              codechef,
+              hackerrank,
+              gfg,
+              email: user.email
+            });
+          } catch (error) {
+            console.warn("Firestore save failed, using localStorage:", error.message);
+          }
+          
+          // Always save to localStorage as backup/primary storage
+          localStorage.setItem("userProfile", JSON.stringify({
+            leetcode,
+            codechef,
+            hackerrank,
+            gfg,
+            email: user.email,
+            userId: user.uid
+          }));
+          
+          window.location.href = "results.html";
+        });
+      }
+    });
+  </script>
+</body>
+</html>
