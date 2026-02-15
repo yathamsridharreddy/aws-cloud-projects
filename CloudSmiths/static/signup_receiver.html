@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Receiver Registration - Blood Donation Management System</title>
+    <meta name="description" content="Register as a blood receiver to request blood when you need it most">
+    <!-- Leaflet (fallback when Google Maps fails) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #333;
+        }
+        
+        .page-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .page-header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+        
+        .signup-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+        
+        .info-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .info-banner h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+        
+        .benefits-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .benefit-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .benefit-item strong {
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .signup-container {
+            padding: 50px;
+        }
+        
+        .section-title {
+            color: #330867;
+            font-size: 1.5em;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #30cfd0;
+        }
+        
+        .section-title:first-child {
+            margin-top: 0;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        label .required {
+            color: #e74c3c;
+        }
+        
+        label .optional {
+            color: #999;
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+            background: #f9f9f9;
+            font-family: inherit;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #30cfd0;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(48,207,208,0.1);
+        }
+        
+        select {
+            cursor: pointer;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.2em;
+        }
+        
+        .help-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .blood-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+        
+        .blood-type-option {
+            position: relative;
+        }
+        
+        .blood-type-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .blood-type-label {
+            display: block;
+            padding: 15px;
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .blood-type-option input[type="radio"]:checked + .blood-type-label {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+            transform: scale(1.05);
+        }
+        
+        .blood-type-label:hover {
+            border-color: #30cfd0;
+            transform: translateY(-2px);
+        }
+        
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .location-info {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .location-info h4 {
+            color: #330867;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .location-info p {
+            color: #555;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .location-info strong {
+            color: #333;
+            min-width: 80px;
+        }
+        
+        .btn-location {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-location:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(76,175,80,0.3);
+        }
+        
+        .btn-location:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .password-strength {
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s;
+            border-radius: 3px;
+        }
+        
+        .password-requirements {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .password-requirements ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .password-requirements li {
+            padding: 3px 0;
+        }
+        
+        .password-requirements li.valid {
+            color: #4CAF50;
+        }
+        
+        .password-requirements li.valid::before {
+            content: "✓ ";
+        }
+        
+        .password-requirements li.invalid::before {
+            content: "○ ";
+        }
+        
+        .terms-checkbox {
+            display: flex;
+            align-items: start;
+            gap: 10px;
+            margin: 25px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+        
+        .terms-checkbox input[type="checkbox"] {
+            width: auto;
+            margin-top: 3px;
+        }
+        
+        .terms-checkbox label {
+            margin: 0;
+            font-size: 0.95em;
+        }
+        
+        .terms-checkbox a {
+            color: #30cfd0;
+            text-decoration: none;
+        }
+        
+        .terms-checkbox a:hover {
+            text-decoration: underline;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(48,207,208,0.4);
+        }
+        
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+        
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .footer-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer-links p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .footer-links a {
+            color: #30cfd0;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 10px;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        .urgency-levels {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .urgency-option {
+            position: relative;
+        }
+        
+        .urgency-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .urgency-label {
+            display: block;
+            padding: 15px;
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .urgency-label strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+        
+        .urgency-label small {
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .urgency-option input[type="radio"]:checked + .urgency-label {
+            border-color: #e74c3c;
+            background: #fff5f5;
+            transform: scale(1.05);
+        }
+        
+        .urgency-option:nth-child(1) input[type="radio"]:checked + .urgency-label {
+            border-color: #f39c12;
+            background: #fff9e6;
+        }
+        
+        .urgency-option:nth-child(2) input[type="radio"]:checked + .urgency-label {
+            border-color: #e67e22;
+            background: #fff3e6;
+        }
+        
+        .urgency-option:nth-child(3) input[type="radio"]:checked + .urgency-label {
+            border-color: #e74c3c;
+            background: #ffe6e6;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .signup-container {
+                padding: 30px;
+            }
+            
+            .blood-types-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .urgency-levels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>🩺 Blood Receiver Registration</h1>
+        <p>Register to request blood when you need it most</p>
+    </div>
+    
+    <div class="signup-wrapper">
+        <div class="info-banner">
+            <h2>Why Register as a Receiver?</h2>
+            <div class="benefits-row">
+                <div class="benefit-item">
+                    <strong>🔍 Find Donors Fast</strong>
+                    <p>Search compatible donors near you instantly</p>
+                </div>
+                <div class="benefit-item">
+                    <strong>📍 Location-Based</strong>
+                    <p>See donors sorted by distance from you</p>
+                </div>
+                <div class="benefit-item">
+                    <strong>⚡ Quick Response</strong>
+                    <p>Get responses in minutes during emergencies</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="signup-container">
+            <form method="POST" action="/signup_receiver" id="receiverForm">
+                <h3 class="section-title">📋 Personal Information</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            placeholder="Enter your full name" 
+                            required
+                            pattern="[A-Za-z\s]{3,50}">
+                        <p class="help-text">As per government ID</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="age">Age <span class="required">*</span></label>
+                        <input 
+                            type="number" 
+                            id="age" 
+                            name="age" 
+                            placeholder="Your age" 
+                            required
+                            min="1"
+                            max="120">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contact">Phone Number <span class="required">*</span></label>
+                        <div class="input-group">
+                            <input 
+                                type="tel" 
+                                id="contact" 
+                                name="contact" 
+                                placeholder="+1 (555) 000-0000" 
+                                required
+                                pattern="[0-9+\-\s\(\)]{10,20}">
+                            <span class="input-icon">📞</span>
+                        </div>
+                        <p class="help-text">For emergency contact</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <div class="input-group">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                placeholder="your.email@example.com" 
+                                required>
+                            <span class="input-icon">📧</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group password-wrapper">
+                        <label for="password">Password <span class="required">*</span></label>
+                        <input type="password" id="password" name="password" placeholder="Create a password" required>
+                        <span class="toggle-password" onclick="togglePassword('password')">👁️</span>
+                        <p class="help-text">Choose a strong password to secure your account</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hospital_name">Hospital/Clinic Name <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="hospital_name" 
+                        name="hospital_name" 
+                        placeholder="Name of hospital or clinic" 
+                        required>
+                    <p class="help-text">Where you need the blood transfusion</p>
+                </div>
+                
+                <h3 class="section-title">📍 Location Information</h3>
+                
+                <div class="form-group">
+                    <button type="button" class="btn-location" onclick="getLocation()" id="locationBtn">
+                        📍 Get My Current Location
+                    </button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="searchBox">Search Location <span class="optional">(Optional)</span></label>
+                    <input 
+                        type="text" 
+                        id="searchBox" 
+                        placeholder="Search for city, area, or landmark..." 
+                        style="padding: 14px 16px; border: 2px solid #e0e0e0; border-radius: 10px; width: 100%; font-size: 1em; margin-bottom: 15px; transition: all 0.3s; background: #f9f9f9;">
+                    <p class="help-text">Type and press Enter to search for a location</p>
+                </div>
+                
+                <div id="map"></div>
+                
+                <div class="location-info" id="locationInfo" style="display: none;">
+                    <h4>📌 Your Location Details</h4>
+                    <p><strong>Latitude:</strong> <span id="latDisplay">-</span></p>
+                    <p><strong>Longitude:</strong> <span id="lonDisplay">-</span></p>
+                    <p><strong>Accuracy:</strong> <span id="accuracyDisplay">-</span></p>
+                </div>
+                
+                <input type="hidden" id="latitude" name="latitude" required>
+                <input type="hidden" id="longitude" name="longitude" required>
+                
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">
+                        I agree to the <a href="#terms">Terms of Service</a> and <a href="#privacy">Privacy Policy</a>. 
+                        I understand that my information will be shared with potential donors to facilitate blood donation.
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                    🩺 Complete Registration
+                </button>
+            </form>
+            
+            <div class="footer-links">
+                <p>Already have an account?</p>
+                <a href="/login">Login Here</a> | <a href="/">Back to Home</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaflet JS (used for fallback when Google Maps fails) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        let map, marker, geocoder, isLeaflet = false;
+
+        // Initialize Google Maps
+        function initGoogleMap() {
+            const defaultLocation = { lat: 20.5937, lng: 78.9629 }; // India center
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: defaultLocation,
+                zoom: 5,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
+            });
+
+            geocoder = new google.maps.Geocoder();
+
+            marker = new google.maps.Marker({
+                map: map,
+                draggable: true,
+                animation: google.maps.Animation.DROP,
+                position: defaultLocation
+            });
+            
+            // Set default location
+            setLocation(defaultLocation.lat, defaultLocation.lng);
+
+            // Click event on map
+            map.addListener('click', function(event) {
+                setLocation(event.latLng.lat(), event.latLng.lng());
+            });
+
+            // Drag event on marker
+            marker.addListener('dragend', function(event) {
+                setLocation(event.latLng.lat(), event.latLng.lng());
+            });
+
+            console.log('Google Maps initialized');
+        }
+
+        // Initialize Leaflet (fallback)
+        function initLeafletMap() {
+            isLeaflet = true;
+            const defaultLocation = [20.5937, 78.9629];
+
+            map = L.map('map').setView(defaultLocation, 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Set default location
+            setLocation(defaultLocation[0], defaultLocation[1]);
+
+            map.on('click', function(e) {
+                setLocation(e.latlng.lat, e.latlng.lng);
+            });
+
+            console.warn('Leaflet fallback initialized');
+        }
+        
+        // Toggle password visibility (used by password field)
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = event.target;
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.textContent = '🙈';
+            } else {
+                field.type = 'password';
+                icon.textContent = '👁️';
+            }
+        }
+        
+        // Get current location
+        function getLocation() {
+            const btn = document.getElementById('locationBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Getting location...';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        setLocation(position.coords.latitude, position.coords.longitude);
+                        btn.textContent = '✓ Location Detected';
+                        btn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                    },
+                    function(error) {
+                        let errorMsg = 'Unable to get location. ';
+                        if (error.code === 1) {
+                            errorMsg += 'Please allow location access in your browser.';
+                        } else if (error.code === 2) {
+                            errorMsg += 'Location unavailable.';
+                        } else {
+                            errorMsg += 'Request timed out.';
+                        }
+                        alert(errorMsg + ' Please click on the map to select your location.');
+                        btn.disabled = false;
+                        btn.textContent = '📍 Get My Current Location';
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser. Please click on the map to select your location.');
+                btn.disabled = false;
+                btn.textContent = '📍 Get My Current Location';
+            }
+        }
+        
+        // Set location on map (Google or Leaflet)
+        function setLocation(lat, lng) {
+            if (isLeaflet) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker([lat, lng], { draggable: true, title: 'Your Location (Drag to adjust)' }).addTo(map);
+                marker.on('dragend', function(e) {
+                    const pos = e.target.getLatLng();
+                    setLocation(pos.lat, pos.lng);
+                });
+                map.setView([lat, lng], 15);
+                // Reverse geocode via Nominatim
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                    .then(r => r.json())
+                    .then(data => { if (data.display_name) document.getElementById('address').value = data.display_name; })
+                    .catch(err => console.log('Reverse geocoding failed:', err));
+            } else {
+                const position = { lat: lat, lng: lng };
+                marker.setPosition(position);
+                marker.setVisible(true);
+                marker.setAnimation(google.maps.Animation.BOUNCE);
+                setTimeout(() => marker.setAnimation(null), 750);
+                map.setCenter(position);
+                map.setZoom(15);
+                geocoder.geocode({ location: position }, function(results, status) {
+                    if (status === 'OK' && results[0]) {
+                        document.getElementById('address').value = results[0].formatted_address;
+                    }
+                });
+            }
+
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+            document.getElementById('latDisplay').textContent = lat.toFixed(6);
+            document.getElementById('lonDisplay').textContent = lng.toFixed(6);
+            document.getElementById('accuracyDisplay').textContent = '±50 meters';
+            document.getElementById('locationInfo').style.display = 'block';
+        }
+        
+        // Search location by name
+        document.getElementById('searchBox').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = this.value.trim();
+                if (!query) {
+                    alert('Please enter a location to search');
+                    return;
+                }
+                
+                // Search using Nominatim (works with Leaflet fallback)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            const result = data[0];
+                            const lat = parseFloat(result.lat);
+                            const lng = parseFloat(result.lon);
+                            setLocation(lat, lng);
+                        } else {
+                            alert('Location not found. Please try a different search term.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        alert('Error searching location. Please try again or click on the map.');
+                    });
+            }
+        });
+        
+        // Form submission validation
+        document.getElementById('receiverForm').addEventListener('submit', function(e) {
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            if (!lat || !lng) {
+                e.preventDefault();
+                alert('Please select your location on the map!');
+            }
+        });
+        
+        // Enable submit button when terms checkbox is checked
+        document.getElementById('terms').addEventListener('change', function() {
+            document.getElementById('submitBtn').disabled = !this.checked;
+        });
+        
+        // Initialize map on page load - try Google first, fallback to Leaflet
+        document.addEventListener('DOMContentLoaded', function() {
+            let attempts = 0;
+            const maxAttempts = 15;
+
+            function tryInitMap() {
+                if (typeof google !== 'undefined' && google.maps) {
+                    initGoogleMap();
+                } else if (attempts >= maxAttempts) {
+                    console.error('Google Maps failed to load, falling back to Leaflet');
+                    initLeafletMap();
+                } else {
+                    attempts++;
+                    setTimeout(tryInitMap, 200);
+                }
+            }
+
+            tryInitMap();
+        });
+
+        // If Google script fails to load, fallback immediately
+        function googleMapsLoadError() {
+            console.error('Google Maps script failed to load, using Leaflet');
+            initLeafletMap();
+        }
+    </script>
+
+    <!-- Load Google Maps with error handler -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCN4dsJaOWi2ET9hOJoZwHrjgLLU-qtAzU&libraries=places" onerror="googleMapsLoadError()"></script>
+</body>
+</html>
